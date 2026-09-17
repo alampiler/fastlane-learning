@@ -32,3 +32,4 @@ Use `yarn`, not `npm` — the lockfile and Yarn Berry linker mode depend on it.
 - Never disable code signing or app verification as a way to "fix" a build error — find the real cause instead.
 - Don't force-push or rewrite history on `main`.
 - Don't touch branch protection rules or repo visibility without asking first.
+- GitHub access is read-only: fetching info (e.g. `gh issue view`, `gh pr view`, `gh repo view`) is fine, but never push, open/edit/close PRs or issues, comment, merge, or otherwise write to GitHub from this project.
