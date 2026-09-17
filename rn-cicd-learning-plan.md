@@ -19,18 +19,18 @@ flowchart LR
 **Підготовка (15 хв):**
 
 - [x] Створити **публічний** репозиторій на GitHub: стандартні раннери, включно з macOS, для публічних репо безкоштовні
-- [x] Взяти AI Collection Manager або свіжий `npx @react-native-community/cli init`
-- [x] Expo managed → `npx expo prebuild`, щоб з'явились `android/` та `ios/`
+- [x] Взяти AI Collection Manager або свіжий `npx @react-native-community/cli init` (обрано цей шлях)
+- [ ] ~~Expo managed → `npx expo prebuild`, щоб з'явились `android/` та `ios/`~~ (не застосовується — проєкт створено через CLI, без Expo)
 - [x] Завести файл `STORIES.md` для запису кожної поломки
 
 ## Сесія 1. PR-пайплайн (2 год)
 
 Результат: PR неможливо змерджити без зелених перевірок.
 
-- [ ] `.github/workflows/pr.yml`: тригер `pull_request`, `actions/setup-node` з `cache: 'yarn'`, кроки lint → `tsc --noEmit` → `jest`
-- [ ] Branch protection на `main`: мердж лише з зеленим CI
-- [ ] PR з навмисною TS-помилкою, переконатись, що він червоніє
-- [ ] `concurrency` з `cancel-in-progress: true`
+- [x] `.github/workflows/pr.yml`: тригер `pull_request`, `actions/setup-node` з `cache: 'yarn'`, кроки lint → `tsc --noEmit` → `jest`
+- [x] Branch protection на `main`: мердж лише з зеленим CI
+- [x] PR з навмисною TS-помилкою, переконатись, що він червоніє
+- [x] `concurrency` з `cancel-in-progress: true`
 
 **Розумієш після:** тригери, jobs/steps, кеш за lock-файлом, навіщо concurrency.
 
