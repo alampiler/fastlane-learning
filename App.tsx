@@ -23,7 +23,7 @@ function App() {
   );
 }
 
-console.log('first')
+console.
 
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
