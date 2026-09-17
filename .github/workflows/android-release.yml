@@ -1,0 +1,51 @@
+name: Android Release Build   # назва workflow, видно у вкладці Actions
+
+on:                            # тригер — коли запускати весь workflow
+   push:                        # реагувати на push комітів
+      branches:
+        - main                   # тільки якщо push стався саме в main
+
+jobs:                          # список jobs у цьому workflow
+    build-android:               # довільна назва job, видно в UI Actions
+      runs-on: ubuntu-latest     # на якій віртуалці виконувати job
+
+      env:                       # environment variables, доступні всім steps нижче
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}  # пароль keystore з GitHub Secrets
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}                  # alias ключа з GitHub Secrets
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}            # пароль ключа з GitHub Secrets
+
+      steps:                     # послідовний список кроків job
+        - name: Checkout
+          uses: actions/checkout@v4   # клонує репозиторій у файлову систему віртуалки
+
+        - name: Setup Node
+          uses: actions/setup-node@v4  # ставить Node.js на віртуалку
+          with:
+            node-version: '22'         # версія Node (звірена з engines.node у package.json)
+            cache: 'yarn'               # кешує yarn-залежності за хешем yarn.lock
+
+        - name: Install dependencies
+          run: yarn install --immutable   # ставить node_modules; падає, якщо yarn.lock розсинхронізований
+
+        - name: Decode keystore
+          # base64 -> назад у бінарний файл, саме туди, де його очікує build.gradle
+          run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+
+        - name: Setup Gradle
+          uses: gradle/actions/setup-gradle@v4   # кешує Gradle wrapper і build cache між запусками
+
+        - name: Build release AAB and APK
+          # bundleRelease -> .aab (для Play Console), assembleRelease -> .apk (для прямої роздачі)
+          run: cd android && ./gradlew bundleRelease assembleRelease
+
+        - name: Upload AAB
+          uses: actions/upload-artifact@v4   # прикріплює файл(и) як завантажуваний артефакт запуску
+          with:
+            name: release-aab                # назва артефакту в UI Actions
+            path: android/app/build/outputs/bundle/release/*.aab   # куди Gradle складає готовий AAB
+
+        - name: Upload APK
+          uses: actions/upload-artifact@v4
+          with:
+            name: release-apk
+            path: android/app/build/outputs/apk/release/*.apk      # куди Gradle складає готовий APK
