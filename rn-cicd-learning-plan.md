@@ -18,10 +18,10 @@ flowchart LR
 
 **Підготовка (15 хв):**
 
-- [ ] Створити **публічний** репозиторій на GitHub: стандартні раннери, включно з macOS, для публічних репо безкоштовні
-- [ ] Взяти AI Collection Manager або свіжий `npx @react-native-community/cli init`
-- [ ] Expo managed → `npx expo prebuild`, щоб з'явились `android/` та `ios/`
-- [ ] Завести файл `STORIES.md` для запису кожної поломки
+- [x] Створити **публічний** репозиторій на GitHub: стандартні раннери, включно з macOS, для публічних репо безкоштовні
+- [x] Взяти AI Collection Manager або свіжий `npx @react-native-community/cli init`
+- [x] Expo managed → `npx expo prebuild`, щоб з'явились `android/` та `ios/`
+- [x] Завести файл `STORIES.md` для запису кожної поломки
 
 ## Сесія 1. PR-пайплайн (2 год)
 
