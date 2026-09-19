@@ -5,7 +5,7 @@
     lane :beta do                                # назва lane — саме "beta" викликатимеш командою `fastlane android beta`
       gradle(
         task: "assemble",                        # яку Gradle-задачу запустити (assemble = зібрати APK)
-        build_type: "Release"                    # для якого build type — той самий "release", що ми вже налаштували в build.gradle
+        build_type: "Release",                   # для якого build type — той самий "release", що ми вже налаштували в build.gradle
         project_dir: "android/"
       )
 
