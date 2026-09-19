@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195513669425",
+    "project_id": "my-project-f2a11",
+    "storage_bucket": "my-project-f2a11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195513669425:android:06af13216f22aaee3e0210",
+        "android_client_info": {
+          "package_name": "com.alampiler.fastlanelearning"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkqZvijl-uvKraKpWmeZRQecebItqpCjw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
