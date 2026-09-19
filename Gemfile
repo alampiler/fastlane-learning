@@ -16,3 +16,5 @@ gem 'benchmark'
 gem 'mutex_m'
 gem 'nkf'
 gem 'fastlane', '~> 2.220'
+# Fastlane plugins can be added below this line
+eval_gemfile('fastlane/Pluginfile') 
