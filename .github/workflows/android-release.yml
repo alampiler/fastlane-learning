@@ -35,9 +35,11 @@ jobs:                          # список jobs у цьому workflow
           run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
         - name: Write Firebase service account
-          # Firebase service account JSON, який потрібен для fastlane deploy, зберігається у GitHub Secrets (без base64 — це вже текст). 
-          # Тут ми його декодуємо і кладемо у файл, куди його очікує fastlane.
-          run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" > firebase-service-account.json
+          # Firebase service account JSON, який потрібен для fastlane deploy, зберігається у GitHub Secrets (без base64 — це вже текст).
+          # Передаємо через env, а не текстову підстановку в run — інакше лапки JSON ламають bash-парсинг команди.
+          env:
+            FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          run: printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > firebase-service-account.json
 
         - name: Setup Ruby
           uses: ruby/setup-ruby@v1
