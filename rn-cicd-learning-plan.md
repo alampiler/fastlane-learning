@@ -38,11 +38,11 @@ flowchart LR
 
 Результат: підписані AAB і APK лежать в artifacts після кожного push у `main`.
 
-- [ ] Згенерувати keystore через `keytool`
-- [ ] `base64 -i release.keystore` → GitHub Secrets разом з паролями
-- [ ] `signingConfigs.release` у `build.gradle`, значення з env або gradle properties
-- [ ] Workflow: декодування keystore → `./gradlew bundleRelease assembleRelease` → `actions/upload-artifact`
-- [ ] Кеш Gradle через `gradle/actions/setup-gradle`, записати час білда до і після
+- [x] Згенерувати keystore через `keytool`
+- [x] `base64 -i release.keystore` → GitHub Secrets разом з паролями
+- [x] `signingConfigs.release` у `build.gradle`, значення з env або gradle properties
+- [x] Workflow: декодування keystore → `./gradlew bundleRelease assembleRelease` → `actions/upload-artifact`
+- [x] Кеш Gradle через `gradle/actions/setup-gradle`, записати час білда до і після
 
 **Розумієш після:** upload key проти app signing key (Play App Signing), чому keystore не комітять, AAB проти APK. Цифри «до/після кешу» ідуть у `STORIES.md`.
 
