@@ -1,0 +1,18 @@
+ default_platform(:android)                    # яку платформу використовувати, якщо не вказано явно
+
+  platform :android do                          # усе всередині стосується тільки Android
+    desc "Build and distribute Android beta via Firebase"   # людський опис lane (просто коментар для команди fastlane lanes)
+    lane :beta do                                # назва lane — саме "beta" викликатимеш командою `fastlane android beta`
+      gradle(
+        task: "assemble",                        # яку Gradle-задачу запустити (assemble = зібрати APK)
+        build_type: "Release"                    # для якого build type — той самий "release", що ми вже налаштували в build.gradle
+        project_dir: "android/"
+      )
+
+      firebase_app_distribution(
+        app: ENV["FIREBASE_APP_ID"],              # ID Android-додатку у Firebase — прочитається з env var (заведемо пізніше)
+        groups: "testers",                        # назва групи тестувальників у Firebase, яким прийде збірка
+        service_credentials_file: ENV["GOOGLE_APPLICATION_CREDENTIALS"]  # шлях до JSON-файлу з обліковими даними Firebase service account — прочитається з env var (заведемо пізніше)
+      )
+    end
+  end

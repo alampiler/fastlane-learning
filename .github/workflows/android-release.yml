@@ -13,6 +13,9 @@ jobs:                          # список jobs у цьому workflow
         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}  # пароль keystore з GitHub Secrets
         ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}                  # alias ключа з GitHub Secrets
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}            # пароль ключа з GitHub Secrets
+        ANDROID_VERSION_CODE: ${{ github.run_number }}                       # версія збірки, автоматично інкрементується GitHub Actions при кожному запуску workflow
+        FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}                      # Firebase App ID з GitHub Secrets, потрібен для fastlane deploy
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-service-account.json        # шлях до JSON-файлу Firebase service account, який ми створимо у одному зі steps нижче
 
       steps:                     # послідовний список кроків job
         - name: Checkout
@@ -31,21 +34,18 @@ jobs:                          # список jobs у цьому workflow
           # base64 -> назад у бінарний файл, саме туди, де його очікує build.gradle
           run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
+        - name: Write Firebase service account
+          # Firebase service account JSON, який потрібен для fastlane deploy, зберігається у GitHub Secrets (без base64 — це вже текст). 
+          # Тут ми його декодуємо і кладемо у файл, куди його очікує fastlane.
+          run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" > firebase-service-account.json
+
+        - name: Setup Ruby
+          uses: ruby/setup-ruby@v1
+          with:
+            bundler-cache: true    # кешує gems між запусками
+
         - name: Setup Gradle
           uses: gradle/actions/setup-gradle@v4   # кешує Gradle wrapper і build cache між запусками
 
-        - name: Build release AAB and APK
-          # bundleRelease -> .aab (для Play Console), assembleRelease -> .apk (для прямої роздачі)
-          run: cd android && ./gradlew bundleRelease assembleRelease
-
-        - name: Upload AAB
-          uses: actions/upload-artifact@v4   # прикріплює файл(и) як завантажуваний артефакт запуску
-          with:
-            name: release-aab                # назва артефакту в UI Actions
-            path: android/app/build/outputs/bundle/release/*.aab   # куди Gradle складає готовий AAB
-
-        - name: Upload APK
-          uses: actions/upload-artifact@v4
-          with:
-            name: release-apk
-            path: android/app/build/outputs/apk/release/*.apk      # куди Gradle складає готовий APK
+        - name: Fastlane beta # запускає fastlane lane beta, яка збирає Android APK і завантажує його у Firebase App Distribution 
+          run: bundle exec fastlane android beta
