@@ -42,6 +42,7 @@ jobs:                          # список jobs у цьому workflow
         - name: Setup Ruby
           uses: ruby/setup-ruby@v1
           with:
+            ruby-version: '3.3'    # версія Ruby для CI (setup-ruby не читає нижню межу з Gemfile)
             bundler-cache: true    # кешує gems між запусками
 
         - name: Setup Gradle
