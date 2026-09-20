@@ -1,10 +1,10 @@
-# Навчальний план: CI/CD для React Native (~12 годин)
+# Навчальний план: CI/CD для React Native (~14 годин)
 
 2026-09-17 · Вадим Вознюк
 
 ## Мета і підготовка
 
-За 6 сесій по 2 години побудувати реальний CI/CD для RN-проєкту без платних акаунтів. Кожна сесія дає робочий результат і історію для співбесіди.
+За 7 сесій по 2 години побудувати реальний CI/CD для RN-проєкту без платних акаунтів. Кожна сесія дає робочий результат і історію для співбесіди. Флоу: спершу повністю закриваємо Android (Сесії 1-5), потім iOS (Сесія 6), потім фіналізація (Сесія 7).
 
 ```mermaid
 flowchart LR
@@ -50,29 +50,39 @@ flowchart LR
 
 Результат: після мерджу нова збірка сама приходить тобі на пошту як тестувальнику.
 
-- [ ] `Gemfile` з fastlane, запуск через `bundle exec`
-- [ ] `fastlane/Fastfile`, lane `android beta`: `gradle(task: "assemble", build_type: "Release")` → `firebase_app_distribution`
-- [ ] Проєкт у Firebase (безкоштовно), service account JSON у secrets
-- [ ] `versionCode` з `GITHUB_RUN_NUMBER`
-- [ ] Workflow викликає лише `bundle exec fastlane android beta`
+- [x] `Gemfile` з fastlane, запуск через `bundle exec`
+- [x] `fastlane/Fastfile`, lane `android beta`: `gradle(task: "assemble", build_type: "Release")` → `firebase_app_distribution`
+- [x] Проєкт у Firebase (безкоштовно), service account JSON у secrets
+- [x] `versionCode` з `GITHUB_RUN_NUMBER`
+- [x] Workflow викликає лише `bundle exec fastlane android beta`
 
 **Розумієш після:** навіщо Fastlane поверх голого CI (логіка в lanes, однаково локально і на CI), автоінкремент версій.
 
-## Сесія 4. Оточення dev/prod (2 год)
+## Сесія 4. Android: оточення dev/prod (2 год)
 
-Результат: на телефоні одночасно стоять dev і prod версії апки.
+Результат: на телефоні одночасно стоять dev і prod версії Android-апки, push у `dev`/`main` автоматично доставляє відповідну через Firebase.
 
-- [ ] Android: `productFlavors` dev і prod з різними `applicationIdSuffix` та назвами
-- [ ] `react-native-config`: `.env.dev`, `.env.prod`; на CI `.env` генерується з secrets, в репо лише `.env.example`
-- [ ] iOS: окрема scheme і build configuration для dev (один раз руками)
-- [ ] Lanes `beta_dev` і `beta_prod`
+- [x] Android: `productFlavors` dev і prod з різними `applicationIdSuffix` та назвами
+- [x] `react-native-config`: `.env.dev`, `.env.prod`; на CI `.env` генерується з secrets, в репо лише `.env.example`
+- [x] Lanes `beta_dev` і `beta_prod` (спільна логіка через `private_lane`)
+- [x] Workflow: push у `dev` → `beta_dev`, push у `main` → `beta_prod` (умова через `github.ref_name`)
 
-**Розумієш після:** flavors проти schemes/configurations, як секрети потрапляють у білд і чому секрет у JS-бандлі насправді не секрет.
+**Розумієш після:** flavors проти applicationIdSuffix, як секрети потрапляють у білд і чому секрет у JS-бандлі насправді не секрет.
 
-## Сесія 5. iOS на CI без $99 (2 год)
+## Сесія 5. Android: E2E з Maestro (2 год)
 
-Результат: зелений iOS-білд під симулятор і схема signing, яку пояснюєш за 2 хвилини без підглядання.
+Результат: E2E-тест ганяється в CI на Android-емуляторі — Android-частина CI/CD після цього повністю закрита.
 
+- [ ] Один flow (відкрити апку → натиснути кнопку → перевірити текст) — спершу локально
+- [ ] Той самий flow в CI на Android-емуляторі (`reactivecircus/android-emulator-runner`)
+
+**Розумієш після:** чим E2E відрізняється від unit-тестів (jest) у пайплайні, чому емулятор у CI повільний і коли це виправдано.
+
+## Сесія 6. iOS на CI без $99 (2 год)
+
+Результат: dev/prod схеми на iOS, зелений iOS-білд під симулятор і схема signing, яку пояснюєш за 2 хвилини без підглядання.
+
+- [ ] iOS: окрема scheme і build configuration для dev (один раз руками, в Xcode — `Debug Dev`/`Release Dev` + scheme `FastlaneLearningDev`)
 - [ ] Job на `macos-latest`, пінінг Xcode через `maxim-lobanov/setup-xcode`
 - [ ] Кеш `ios/Pods` за ключем `Podfile.lock`, `bundle exec pod install`
 - [ ] `xcodebuild -workspace ... -scheme ... -sdk iphonesimulator -configuration Release CODE_SIGNING_ALLOWED=NO`
@@ -89,23 +99,22 @@ flowchart LR
   D --> E[upload_to_testflight<br/>API key .p8]
 ```
 
-**Розумієш після:** чому macOS-хвилини дорогі, чому Xcode пінять, чому API key кращий за Apple ID (2FA), як працює match.
+**Розумієш після:** flavors (Android) проти schemes/build configurations (iOS); чому macOS-хвилини дорогі, чому Xcode пінять, чому API key кращий за Apple ID (2FA), як працює match.
 
-## Сесія 6. OTA, E2E, фіналізація (2 год)
+## Сесія 7. OTA і фіналізація (2 год)
 
-Результат: E2E-тест у CI і README, який працює як доказ на співбесіді.
+Результат: README, який працює як доказ на співбесіді.
 
-- [ ] **Maestro, 45 хв:** один flow (відкрити апку → натиснути кнопку → перевірити текст), локально, потім у CI на Android-емуляторі (`reactivecircus/android-emulator-runner`)
 - [ ] **OTA, 30 хв, теорія:** App Center закрито; альтернативи EAS Update і self-hosted CodePush; `runtimeVersion` і правило «нативна зміна = стор-реліз»
 - [ ] **README, 45 хв:** діаграма пайплайна + розділ «Проблеми, які я вирішив» з `STORIES.md`
 
-Якщо часу нема, сесію можна скоротити до теорії OTA і README.
+Якщо часу нема, сесію можна скоротити до теорії OTA і README (вона й так лише про це).
 
 ## Результат і підготовка до співбесіди
 
-Після 12 годин: публічне репо з 3 workflows (PR, Android beta, iOS build), Fastfile і 4–5 реальних історій про поломки.
+Після ~14 годин: публічне репо з workflows (PR, Android beta dev/prod, iOS build), Fastfile (Android+iOS lanes) і 5+ реальних історій про поломки.
 
-**Пріоритети:** сесії 1–3 обов'язкові, 4–5 дуже бажані, 6 можна скоротити.
+**Пріоритети:** сесії 1–4 обов'язкові (весь Android-цикл закритий), 5–6 дуже бажані, 7 можна скоротити.
 
 **Формат історії в `STORIES.md`:** що зламалось → як знайшов причину → що зробив → цифри.
 
@@ -113,14 +122,14 @@ flowchart LR
 
 | Питання | Де закриваєш |
 | --- | --- |
-| Як влаштовано iOS signing на CI і навіщо match? | Сесія 5 |
+| Як влаштовано iOS signing на CI і навіщо match? | Сесія 6 |
 | Як безпечно зберігати keystore і секрети? | Сесії 2, 4 |
 | Що робити, якщо втратили Android-ключ? | Сесія 2 |
-| Як прискорити білд? | Сесії 1, 2, 5 |
-| Коли OTA, а коли стор-реліз? | Сесія 6 |
+| Як прискорити білд? | Сесії 1, 2, 6 |
+| Коли OTA, а коли стор-реліз? | Сесія 7 |
 | Як ведете версіонування? | Сесія 3 |
 | Як організувати dev/staging/prod? | Сесія 4 |
-| EAS, Bitrise чи GitHub Actions: які trade-offs? | Сесії 3, 5 |
+| EAS, Bitrise чи GitHub Actions: які trade-offs? | Сесії 3, 6 |
 
 **Як економити час:**
 

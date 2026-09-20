@@ -3519,6 +3519,7 @@ __metadata:
     prettier: 2.8.8
     react: 19.2.3
     react-native: 0.87.1
+    react-native-config: ^1.7.2
     react-native-safe-area-context: ^5.5.2
     react-test-renderer: 19.2.3
     typescript: ^6.0.3
@@ -7247,6 +7248,20 @@ __metadata:
   version: 19.3.0
   resolution: "react-is@npm:19.3.0"
   checksum: c7170b2f1f8bc91cb14c94849a5463a84360b8737d9829aa48c9ef314c1442bc87a2e93e167da45c74ebdbf5b912bdc2fab3c993df495adde3223d533edd6f3b
+  languageName: node
+  linkType: hard
+
+"react-native-config@npm:^1.7.2":
+  version: 1.7.2
+  resolution: "react-native-config@npm:1.7.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-windows: ">=0.61"
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: 64e97cc1fa57211ae09d2f04df91d8e2c262a015b3be7b18d03f5ce4ab85f59666c85b6d55711495133b5bca2a808e5819fb7e7ca1fd3ea1464c988667c5b157
   languageName: node
   linkType: hard
 
