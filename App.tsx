@@ -37,7 +37,7 @@ function AppContent() {
       />
       <Text style={{ textAlign: 'center', marginBottom: 20 }}>
         Edit <Text style={{ fontWeight: 'bold' }}>App.tsx</Text> to change this
-        screen and then come back to see your edits.
+        screen and then come back to see your edits. 2
       </Text>
       <Text>
         Config.API_URL: {Config.API_URL}
