@@ -1,4 +1,5 @@
 apply plugin: "com.android.application"
+apply from: project(':react-native-config').projectDir.toString() + "/dotenv.gradle"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
@@ -84,6 +85,22 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode Integer.parseInt(System.getenv("ANDROID_VERSION_CODE") ?: "1")
         versionName "1.0"
+    }
+    flavorDimensions "env" // Gradle вимагає назвати "вимір" варіативності (навіть якщо він один). У нас одна вісь — середовище (env), тому один dimension.
+    productFlavors {
+        dev {
+            dimension "env" //в кожному flavor — прив'язка до цього виміру (обов'язково, інакше Gradle не збере проєкт).
+            applicationIdSuffix ".dev" // додається до базового applicationId (com.alampiler.fastlanelearning → com.alampiler.fastlanelearning.dev). 
+                                       // Це і є той самий "різний  applicationId" — Android бачить два несумісні пакети, встановлює обидва одночасно. 
+                                       // У prod суфікса немає — лишається базовий applicationId, як зараз.
+            resValue "string", "app_name", "FastlaneLearning Dev" // перевизначає назву застосунку, яку бачиш під іконкою на екрані телефону. 
+                                                                  // Без цього обидві апки називались би однаково
+                                                                  // "FastlaneLearning" і плутались би на екрані, попри різні applicationId.
+        }
+        prod {
+            dimension "env"
+            resValue "string", "app_name", "FastlaneLearning"
+        }
     }
     signingConfigs {
         debug {
