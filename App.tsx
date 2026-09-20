@@ -27,14 +27,14 @@ function App() {
 
 
 function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  // const safeAreaInsets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
+      {/* <NewAppScreen
         templateFileName="App.tsx"
         safeAreaInsets={safeAreaInsets}
-      />
+      /> */}
       <Text style={{ textAlign: 'center', marginBottom: 20 }}>
         Edit <Text style={{ fontWeight: 'bold' }}>App.tsx</Text> to change this
         screen and then come back to see your edits. 2
