@@ -3,7 +3,8 @@ name: Android Release Build   # назва workflow, видно у вкладц�
 on:                            # тригер — коли запускати весь workflow
    push:                        # реагувати на push комітів
       branches:
-        - main                   # тільки якщо push стався саме в main
+        - main            
+        - dev       
 
 jobs:                          # список jobs у цьому workflow
     build-android:               # довільна назва job, видно в UI Actions
@@ -15,6 +16,7 @@ jobs:                          # список jobs у цьому workflow
         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}            # пароль ключа з GitHub Secrets
         ANDROID_VERSION_CODE: ${{ github.run_number }}                       # версія збірки, автоматично інкрементується GitHub Actions при кожному запуску workflow
         FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}                      # Firebase App ID з GitHub Secrets, потрібен для fastlane deploy
+        FIREBASE_APP_ID_DEV: ${{ secrets.FIREBASE_APP_ID_DEV }}              # Firebase App ID для dev-збірки з GitHub Secrets, потрібен для fastlane deploy
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-service-account.json        # шлях до JSON-файлу Firebase service account, який ми створимо у одному зі steps нижче
 
       steps:                     # послідовний список кроків job
@@ -41,6 +43,14 @@ jobs:                          # список jobs у цьому workflow
             FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           run: printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > firebase-service-account.json
 
+        - name: Write .env files
+          env:
+            ANDROID_ENV_DEV: ${{ secrets.ANDROID_ENV_DEV }}
+            ANDROID_ENV_PROD: ${{ secrets.ANDROID_ENV_PROD }}
+          run: |
+            printf '%s' "$ANDROID_ENV_DEV" > .env.dev
+            printf '%s' "$ANDROID_ENV_PROD" > .env.prod
+
         - name: Setup Ruby
           uses: ruby/setup-ruby@v1
           with:
@@ -50,5 +60,10 @@ jobs:                          # список jobs у цьому workflow
         - name: Setup Gradle
           uses: gradle/actions/setup-gradle@v4   # кешує Gradle wrapper і build cache між запусками
 
-        - name: Fastlane beta # запускає fastlane lane beta, яка збирає Android APK і завантажує його у Firebase App Distribution 
-          run: bundle exec fastlane android beta
+        - name: Fastlane beta dev # запускає fastlane lane beta, яка збирає Android APK і завантажує його у Firebase App Distribution 
+          if: github.ref_name == 'dev'
+          run: bundle exec fastlane android beta_dev
+
+        - name: Fastlane beta prod
+          if: github.ref_name == 'main'
+          run: bundle exec fastlane android beta_prod

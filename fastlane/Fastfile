@@ -1,18 +1,27 @@
  default_platform(:android)                    # яку платформу використовувати, якщо не вказано явно
 
   platform :android do                          # усе всередині стосується тільки Android
-    desc "Build and distribute Android beta via Firebase"   # людський опис lane (просто коментар для команди fastlane lanes)
-    lane :beta do                                # назва lane — саме "beta" викликатимеш командою `fastlane android beta`
-      gradle(
-        task: "assemble",                        # яку Gradle-задачу запустити (assemble = зібрати APK)
-        build_type: "Release",                   # для якого build type — той самий "release", що ми вже налаштували в build.gradle
-        project_dir: "android/"
-      )
+    desc "Build and distribute Android dev beta via Firebase"   # людський опис lane (просто коментар для команди fastlane lanes)
 
-      firebase_app_distribution(
-        app: ENV["FIREBASE_APP_ID"],              # ID Android-додатку у Firebase — прочитається з env var (заведемо пізніше)
-        groups: "testers",                        # назва групи тестувальників у Firebase, яким прийде збірка
-        service_credentials_file: ENV["GOOGLE_APPLICATION_CREDENTIALS"]  # шлях до JSON-файлу з обліковими даними Firebase service account — прочитається з env var (заведемо пізніше)
-      )
+    lane :beta_dev do # назва lane — саме "beta" викликатимеш командою `fastlane android beta`
+        build_and_distribute(flavor: "Dev", env_file: ".env.dev", app_id: ENV["FIREBASE_APP_ID_DEV"])
+    end
+
+    desc "Build and distribute Android prod beta via Firebase" 
+    lane :beta_prod do
+        build_and_distribute(flavor: "Prod", env_file: ".env.prod", app_id: ENV["FIREBASE_APP_ID"])
+    end
+
+    private_lane :build_and_distribute do |options|
+        ENV["ENVFILE"] = options[:env_file] # встановлюємо змінну середовища ENVFILE, щоб react-native-config підхопив потрібний .env-файл
+        gradle(
+            task: "assemble#{options[:flavor]}Release", # яку Gradle-задачу запустити (assemble = зібрати APK)
+            project_dir: "android/"
+        )
+        firebase_app_distribution(
+        app: options[:app_id], # Firebase App ID (знаходиться у Firebase Console, у налаштуваннях проєкту)
+        groups: "testers",   # назва групи тестувальників у Firebase, яким прийде збірка
+        service_credentials_file: ENV["GOOGLE_APPLICATION_CREDENTIALS"]# шлях до JSON-файлу з обліковими даними Firebase service account — прочитається з env var (заведемо пізніше)
+        )
     end
   end
