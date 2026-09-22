@@ -51,7 +51,7 @@ jobs:
             xcodebuild -workspace ios/FastlaneLearning.xcworkspace \
               -scheme FastlaneLearningDev \
               -sdk iphonesimulator \
-              -configuration Release Dev \
+              -configuration "Release Dev" \
               CODE_SIGNING_ALLOWED=NO
 
       - name: Build iOS simulator main
@@ -60,5 +60,5 @@ jobs:
             xcodebuild -workspace ios/FastlaneLearning.xcworkspace \
               -scheme FastlaneLearning \
               -sdk iphonesimulator \
-              -configuration Release \
+              -configuration "Release" \
               CODE_SIGNING_ALLOWED=NO
