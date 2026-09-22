@@ -74,6 +74,8 @@ jobs:
           uses: reactivecircus/android-emulator-runner@v2
           with:
             api-level: 34
+            target: google_apis
+            arch: x86_64
             # ставить щойно зібраний APK на емулятор, потім прогонює той самий flow, що тестував локально
             script: |
               adb install -r android/app/build/outputs/apk/dev/debug/app-dev-debug.apk
