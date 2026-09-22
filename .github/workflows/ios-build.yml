@@ -1,0 +1,63 @@
+name: iOS Build
+
+on: 
+  push:
+    branches:
+      - main  # macOS-хвилини дорожчі/повільніші за чергою — ганяємо лише на вже змерджений код
+      - dev
+
+jobs: 
+  build-ios:
+    runs-on: macos-latest # на якій віртуалці виконувати job
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v2
+        with:
+          xcode-version: latest-stable # остання стабільна версія, преінстальована на раннері — без сюрпризів
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true # ставить cocoapods gem з Gemfile.lock
+      
+      - name: Cache Pods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}   # кеш інвалідується, коли Podfile.lock змінюється
+          restore-keys: |
+            pods-
+
+      - name: Install Pods
+        run: cd ios && bundle exec pod install
+
+      - name: Build iOS simulator dev
+        if: github.ref_name == 'dev'
+        run: |
+            xcodebuild -workspace ios/FastlaneLearning.xcworkspace \
+              -scheme FastlaneLearningDev \
+              -sdk iphonesimulator \
+              -configuration Release Dev \
+              CODE_SIGNING_ALLOWED=NO
+      - name: Build iOS simulator main
+        if: github.ref_name == 'main'
+        run: |
+            xcodebuild -workspace ios/FastlaneLearning.xcworkspace \
+              -scheme FastlaneLearning \
+              -sdk iphonesimulator \
+              -configuration Release \
+              CODE_SIGNING_ALLOWED=NO
