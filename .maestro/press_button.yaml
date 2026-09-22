@@ -1,0 +1,6 @@
+appId: com.alampiler.fastlanelearning.dev
+---
+- launchApp
+- assertVisible: "Press me"
+- tapOn: "Press me"
+- assertVisible: "Button pressed!"
