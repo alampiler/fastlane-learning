@@ -1,37 +1,86 @@
 name: 'Pull Request Workflow'
 
 on:
-  pull_request:
-   branches:
+    pull_request:
+      branches:
         - main
         - dev
-    
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout 
-        uses: actions/checkout@v4
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'yarn'
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '22'
+            cache: 'yarn'
 
-      - name: Install dependencies
-        run: yarn install --immutable
+        - name: Install dependencies
+          run: yarn install --immutable
 
-      - name: Lint
-        run: yarn lint
+        - name: Lint
+          run: yarn lint
 
-      - name: Typecheck
-        run: yarn tsc --noEmit
+        - name: Typecheck
+          run: yarn tsc --noEmit
 
-      - name: Test
-        run: yarn jest
+        - name: Test
+          run: yarn jest
+
+    e2e:
+      needs: build   # стартує лише якщо job build завершився успіхом
+      runs-on: ubuntu-latest
+
+      env:
+        ANDROID_ENV_DEV: ${{ secrets.ANDROID_ENV_DEV }}
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Setup Node
+          uses: actions/setup-node@v4
+          with:
+            node-version: '22'
+            cache: 'yarn'
+
+        - name: Install dependencies
+          run: yarn install --immutable
+
+        - name: Write .env.dev
+          run: printf '%s' "$ANDROID_ENV_DEV" > .env.dev
+
+        - name: Build debug APK
+          run: cd android && ./gradlew assembleDevDebug
+
+        - name: Install Maestro CLI
+          # ставить бінарник maestro, потім додає його в PATH для НАСТУПНИХ кроків цього job
+          run: |
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+        - name: Enable KVM group perms # Ставить права на /dev/kvm для запуску емулятора в GitHub Actions
+          run: |
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm    
+
+        - name: Run E2E on emulator
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+            api-level: 34
+            target: google_apis
+            arch: x86_64
+            # ставить щойно зібраний APK на емулятор, потім прогонює той самий flow, що тестував локально
+            script: |
+              adb install -r android/app/build/outputs/apk/dev/debug/app-dev-debug.apk
+              maestro test .maestro/press_button.yaml
 
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+    group: pr-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
