@@ -1,0 +1,48 @@
+name: Android E2E Maestro   # назва workflow, видно у вкладці Actions
+
+on:                          # тригер
+    pull_request:              # запускати на кожен PR
+       branches:                # тільки якщо PR цілить у ці гілки
+        - main
+        - dev
+
+jobs:                        # список jobs
+    e2e:                       # довільна назва job
+      runs-on: ubuntu-latest    # раннер з підтримкою KVM для Android-емулятора
+
+      env:                      # env vars для всіх steps нижче
+        ANDROID_ENV_DEV: ${{ secrets.ANDROID_ENV_DEV }}   # вміст .env.dev з GitHub Secrets
+
+      steps:                    # steps — сиблінг env, не всередині нього
+        - name: Checkout
+          uses: actions/checkout@v4   # клонує репозиторій на раннер
+
+        - name: Setup Node
+          uses: actions/setup-node@v4
+          with:
+            node-version: '22'        # версія Node (звірена з engines.node)
+            cache: 'yarn'              # кеш yarn-залежностей за yarn.lock
+
+        - name: Install dependencies
+          run: yarn install --immutable   # ставить node_modules
+
+        - name: Write .env.dev
+          run: printf '%s' "$ANDROID_ENV_DEV" > .env.dev   # відтворює .env.dev на раннері з секрету
+
+        - name: Build debug APK
+          run: cd android && ./gradlew assembleDevDebug   # саме dev-флейвор, debug build type — без release-підпису
+
+        - name: Install Maestro CLI
+          # ставить бінарник maestro, потім додає його в PATH для НАСТУПНИХ кроків цього job
+          run: |
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+        - name: Run E2E on emulator
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+            api-level: 34
+            # ставить щойно зібраний APK на емулятор, потім прогонює той самий flow, що тестував локально
+            script: |
+              adb install -r android/app/build/outputs/apk/dev/debug/app-dev-debug.apk
+              maestro test .maestro/press_button.yaml
